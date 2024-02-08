@@ -1,6 +1,8 @@
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:randomchat/firebase/firebase_provider.dart';
+import 'package:randomchat/models/user_model.dart';
 import 'package:randomchat/screens/login.dart';
 import 'package:randomchat/screens/widgets.dart';
 
@@ -82,23 +84,8 @@ class _SignUpPageState extends State<SignUpPage> {
 
                  if(emailController.text.isNotEmpty && passController.text.isNotEmpty){
 
-                   try {
-                     UserCredential credential = await FirebaseAuth.instance.createUserWithEmailAndPassword
-                       (email: email, password: password);
-
-
-                     var storepass = passController.text.trim();
-
-                     print("User Secret pass : ${storepass}");
-
-                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("SuccessFully Account Created")));
-
-                     Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginPage(),));
-
-                   } on FirebaseException catch ( myErrors ){
-                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(myErrors.code)));
-                   }
-
+                   var newUser = UserModel(name: "name", email: email, mobNo: "9876543321", gender: "Male", isOnline: false, status: 1, profilePic: "", profileStatus: 1);
+                   FirebaseProvider.createUser(mUser: newUser, mPass: password, context: context);
 
                  } /// if
                }
