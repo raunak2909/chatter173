@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:randomchat/app_route/app_routes.dart';
 import 'package:randomchat/firebase_options.dart';
 import 'package:randomchat/screens/home_screen.dart';
 import 'package:randomchat/screens/splash.dart';
@@ -33,7 +34,8 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: SplashPage(),
+      initialRoute: AppRoutes.splashScreen,
+      routes: AppRoutes.routes,
     );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:randomchat/screens/chat_screen.dart';
+import 'package:randomchat/screens/contact_page.dart';
 import 'package:randomchat/screens/profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -182,6 +183,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           SimpleDialogOption(
                             onPressed: () {
                               Navigator.pop(context);
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => ContactPage(),));
                             },
                             child: Row(
                               children: [

@@ -2,6 +2,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:randomchat/app_route/app_routes.dart';
 import 'package:randomchat/screens/home_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'login.dart';
@@ -23,15 +24,15 @@ class _SplashPageState extends State<SplashPage> {
     Timer(const Duration(seconds: 3), () async {
 
       var prefs = await SharedPreferences.getInstance();
-      bool? myKey =  prefs.getBool(LoginPageState.LOGIN_PREFS_KEY);
+      String? myKey =  prefs.getString(LoginPageState.LOGIN_PREFS_KEY);
 
-      Widget navigateTo = const LoginPage();
+      String navigateTo = AppRoutes.loginScreen;
 
-      if(myKey != null && myKey){
-        navigateTo = const HomeScreen();         /// const remove
+      if(myKey != null && myKey!=""){
+        navigateTo = AppRoutes.homeScreen;         /// const remove
       }
 
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => navigateTo));
+      Navigator.pushNamed(context, navigateTo);
 
 
     },);

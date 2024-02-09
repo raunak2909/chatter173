@@ -13,7 +13,7 @@ class FirebaseProvider{
   static final String COLLECTION_USER = "users";
   static final String COLLECTION_CHAT = "chats";
 
-  static createUser({required UserModel mUser, required String mPass, required BuildContext context}) async {
+  Future<void> createUser({required UserModel mUser, required String mPass}) async {
     try {
       UserCredential credential = await fireBaseAuth.createUserWithEmailAndPassword
         (email: mUser.email!, password: mPass);
@@ -24,15 +24,16 @@ class FirebaseProvider{
             .collection(COLLECTION_USER)
             .doc(credential.user!.uid)
             .set(mUser.toDoc()).then((value){
-              Navigator.pop(context);
         }).onError((error, stackTrace) {
           print("Error: $error");
+          throw Exception("Error: $error");
         });
       }
 
 
     } on FirebaseException catch (e){
       print("Error: $e");
+      throw Exception("Error: $e");
     }
   }
 
@@ -53,5 +54,13 @@ class FirebaseProvider{
       print("Error: $e");
     }
   }
+
+  static Future<QuerySnapshot<Map<String, dynamic>>> getAllUsers(){
+    return fireBaseFireStore
+        .collection(COLLECTION_USER)
+        .get();
+  }
+
+
 
 }
