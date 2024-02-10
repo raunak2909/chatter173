@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:randomchat/app_route/ChatScreenArguments.dart';
+import 'package:randomchat/app_route/app_routes.dart';
 import 'package:randomchat/firebase/firebase_provider.dart';
 import 'package:randomchat/models/user_model.dart';
 import 'package:randomchat/screens/login.dart';
@@ -53,8 +55,13 @@ class _ContactPageState extends State<ContactPage> {
           ListView.builder(
             itemCount: arrUsers.length,
               itemBuilder: (_,index){
+
+              var eachContactId = snapshot.data!.docs[index].id;
+
             return ListTile(
               onTap: (){
+
+                Navigator.pushNamed(context, AppRoutes.chatScreen, arguments: ChatScreenArguments(eachContactId));
 
               },
                 leading: CircleAvatar(
