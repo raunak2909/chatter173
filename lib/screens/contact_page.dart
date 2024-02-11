@@ -47,6 +47,7 @@ class _ContactPageState extends State<ContactPage> {
           for(QueryDocumentSnapshot<Map<String, dynamic>> eachDoc in snapshot.data!.docs){
             var eachUser = UserModel.fromDoc(eachDoc.data());
             if(eachDoc.id!=userId){
+              eachUser.userId = eachDoc.id;
               arrUsers.add(eachUser);
             }
           }
@@ -56,19 +57,41 @@ class _ContactPageState extends State<ContactPage> {
             itemCount: arrUsers.length,
               itemBuilder: (_,index){
 
-              var eachContactId = snapshot.data!.docs[index].id;
+              var eachContactId = arrUsers[index].userId;
+              var eachContactName = arrUsers[index].name;
+              print("contactId : $eachContactId");
 
-            return ListTile(
-              onTap: (){
+            return StreamBuilder(stream: FirebaseProvider.getUnreadCount(userId: userId, toId: eachContactId!),
+                builder: (_ , snapshot){
+              if(snapshot.connectionState==ConnectionState.waiting){
+                return Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+              return ListTile(
+                onTap: (){
 
-                Navigator.pushNamed(context, AppRoutes.chatScreen, arguments: ChatScreenArguments(eachContactId));
+                  Navigator.pushNamed(context, AppRoutes.chatScreen, arguments: ChatScreenArguments(eachContactId, eachContactName!, userId));
 
-              },
+                },
                 leading: CircleAvatar(
                   child: arrUsers[index].profilePic!="" ? Image.network(arrUsers[index].profilePic!) : Icon(Icons.account_circle),
                 ),
                 title: Text(arrUsers[index].name!),
-                subtitle: Text(arrUsers[index].email!),);
+                subtitle: Text(arrUsers[index].email!),
+                trailing: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: Colors.green,
+                  ),
+                  child: Center(
+                    child: Text('${snapshot.data!.docs.length}', style: TextStyle(color: Colors.white)),
+                  ),
+                  height: 20,
+                  width: 20,
+                ),
+              );
+                });
           }) : Center(
             child: Text('No Users Found'),
           );

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:randomchat/models/message_model.dart';
 import 'package:randomchat/models/user_model.dart';
 import 'package:randomchat/screens/login.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class FirebaseProvider {
   static final fireBaseAuth = FirebaseAuth.instance;
@@ -60,19 +61,19 @@ class FirebaseProvider {
     return fireBaseFireStore.collection(COLLECTION_USER).get();
   }
 
-  static String getChatId(String fromId, String toId){
-
-    if(fromId.hashCode>=toId.hashCode){
-      return "${fromId}_${toId}";
+  static String getChatId(String fromId, String toId) {
+    print("$fromId, $toId");
+    if (fromId.hashCode <= toId.hashCode) {
+      return "${fromId}_$toId";
     } else {
-      return "${toId}_${fromId}";
+      return "${toId}_$fromId";
     }
-
-
   }
 
-  static void sendMessage({required String msg, required String toId}) {
-    var userId = fireBaseAuth.currentUser!.uid;
+  static void sendMessage(
+      {required String msg,
+      required String toId,
+      required String userId}) async {
     var currTime = DateTime.now().millisecondsSinceEpoch;
     var chatId = getChatId(userId, toId);
     print("$userId, $toId");
@@ -93,11 +94,13 @@ class FirebaseProvider {
         .set(newMsg.toDoc());
   }
 
-  static void sendImageMsg({required String imgUrl, required String toId, String imgMsg = ""}) {
-    var userId = fireBaseAuth.currentUser!.uid;
+  static void sendImageMsg(
+      {required String imgUrl,
+      required String toId,
+      String imgMsg = "",
+      required String userId}) async {
     var currTime = DateTime.now().millisecondsSinceEpoch;
     var chatId = getChatId(userId, toId);
-
 
     var newImgMsg = MessageModel(
         msgId: currTime.toString(),
@@ -114,17 +117,44 @@ class FirebaseProvider {
         .collection(COLLECTION_MSG)
         .doc(currTime.toString())
         .set(newImgMsg.toDoc());
-
   }
 
-  static Stream<QuerySnapshot<Map<String, dynamic>>> getAllMsg(String toId){
-    var userId = fireBaseAuth.currentUser!.uid;
+  static Stream<QuerySnapshot<Map<String, dynamic>>> getAllMsg(
+      {required String userId, required String toId}) {
+    var chatId = getChatId(userId, toId);
+    print("getMessage : $userId, $toId");
+    print("getMessage : $chatId");
+
+    return fireBaseFireStore
+        .collection(COLLECTION_CHAT)
+        .doc(chatId)
+        .collection(COLLECTION_MSG)
+        .snapshots();
+  }
+
+  static void updateReadStatus(
+      {required String mId, required String userId, required String toId}) {
+    var currTime = DateTime.now().millisecondsSinceEpoch;
+    var chatId = getChatId(userId, toId);
+
+    fireBaseFireStore
+        .collection(COLLECTION_CHAT)
+        .doc(chatId)
+        .collection(COLLECTION_MSG)
+        .doc(mId)
+        .update({"readAt": currTime.toString()});
+  }
+
+  static Stream<QuerySnapshot<Map<String, dynamic>>> getUnreadCount(
+      {required String userId, required String toId}) {
     var chatId = getChatId(userId, toId);
 
     return fireBaseFireStore
         .collection(COLLECTION_CHAT)
         .doc(chatId)
         .collection(COLLECTION_MSG)
+        .where("readAt", isEqualTo: "")
+        .where("fromId", isEqualTo: toId)
         .snapshots();
   }
 }

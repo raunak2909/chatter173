@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 
 class UserModel {
+  String? userId;
   String? name;
   String? email;
   String? mobNo;
@@ -11,6 +12,7 @@ class UserModel {
   int? profileStatus = 1;
 
   UserModel({
+      this.userId,
       required this.name,
       required this.email,
       required this.mobNo,

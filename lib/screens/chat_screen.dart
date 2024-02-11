@@ -14,11 +14,21 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   String toId = "";
+  String contactName = "";
+  String mUserId = "";
   final TextEditingController _textController = TextEditingController();
 
-  void _handleSubmitted(String text) {
-    FirebaseProvider.sendMessage(msg: text, toId: toId);
+  @override
+  void initState() {
+    super.initState();
   }
+
+  void _handleSubmitted(String text) async{
+
+    FirebaseProvider.sendMessage(msg: text, toId: toId, userId: mUserId);
+  }
+
+
 
   Widget _buildTextComposer() {
     return Container(
@@ -54,8 +64,12 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
 
-    toId = (ModalRoute.of(context)!.settings.arguments as ChatScreenArguments).toId;
+    var args = ModalRoute.of(context)!.settings.arguments as ChatScreenArguments;
+    toId = args.toId;
+    contactName = args.contactName;
+    mUserId = args.userId;
 
+    print(toId);
     return Scaffold(
       appBar: AppBar(
         title: Row(
@@ -66,7 +80,7 @@ mainAxisAlignment: MainAxisAlignment.start,
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(' User Name'),
+                Text(contactName),
                 Text(' Online',style: TextStyle(fontSize: 10),),
 
               ],
@@ -82,7 +96,7 @@ mainAxisAlignment: MainAxisAlignment.start,
         children: [
           Flexible(
             child: StreamBuilder(
-              stream: FirebaseProvider.getAllMsg(toId),
+              stream: FirebaseProvider.getAllMsg(userId: mUserId, toId: toId),
               builder: (context, snapshot){
                 if(snapshot.connectionState==ConnectionState.waiting){
                   return Center(
@@ -91,16 +105,15 @@ mainAxisAlignment: MainAxisAlignment.start,
                 }
 
                 return ListView.builder(
-                  reverse: true,
                   padding: const EdgeInsets.all(8.0),
                   itemCount: snapshot.data!.docs.length,
                   itemBuilder: (_, int index) {
                     MessageModel eachMsg = MessageModel.fromDoc(snapshot.data!.docs[index].data());
                     var fromId = eachMsg.fromId;
                     if(fromId==FirebaseProvider.fireBaseAuth.currentUser!.uid){
-                      return RightChatMessage(message: eachMsg);
+                      return fromMsgWidget(msg: eachMsg);
                     } else {
-                      return LeftChatMessage(message: eachMsg);
+                      return toMsgWidget(msg: eachMsg);
                     }
                   },
                 );
@@ -114,6 +127,91 @@ mainAxisAlignment: MainAxisAlignment.start,
       ),
     );
   }
+
+  //yellow //right
+  Widget fromMsgWidget({required MessageModel msg}) {
+    var sentTime = TimeOfDay.fromDateTime(
+        DateTime.fromMillisecondsSinceEpoch(int.parse(msg.sentAt!)));
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 8.0),
+          child: Text('${sentTime.format(context)}'),
+        ),
+        Flexible(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Container(
+                margin: EdgeInsets.all(11),
+                padding: EdgeInsets.all(11),
+                decoration: BoxDecoration(
+                    color: Colors.amber.shade100,
+                    borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(21),
+                        topRight: Radius.circular(21),
+                        bottomLeft: Radius.circular(21))),
+                child: msg.msgType == 0 ? Text(msg.msg!) : Image.network(msg.imgUrl!),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Visibility(visible: msg.readAt!="",
+                      child: Text(msg.readAt=="" ? "" : TimeOfDay.fromDateTime(
+                          DateTime.fromMillisecondsSinceEpoch(int.parse(msg.readAt!))).format(context).toString())),
+                  SizedBox(
+                    width: 7,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8.0),
+                    child: Icon(Icons.done_all_outlined,
+                      color: msg.readAt!= "" ? Colors.blue : Colors.grey,),
+                  ),
+                ],
+              )
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  //blue //left
+  Widget toMsgWidget({required MessageModel msg}) {
+    
+    if(msg.readAt==""){
+      FirebaseProvider.updateReadStatus(mId: msg.msgId!, userId: mUserId, toId: toId);
+    }
+
+    var sentTime = TimeOfDay.fromDateTime(
+        DateTime.fromMillisecondsSinceEpoch(int.parse(msg.sentAt!)));
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Flexible(
+          child: Container(
+            margin: EdgeInsets.all(11),
+            padding: EdgeInsets.all(11),
+            decoration: BoxDecoration(
+                color: Colors.blue.shade100,
+                borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(21),
+                    topRight: Radius.circular(21),
+                    bottomRight: Radius.circular(21))),
+            child: Text(msg.msg!),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(right: 8.0),
+          child: Text('${sentTime.format(context)}'),
+        ),
+      ],
+    );
+  }
+
+
 }
 
 class RightChatMessage extends StatelessWidget {
