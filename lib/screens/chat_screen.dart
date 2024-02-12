@@ -17,6 +17,7 @@ class _ChatScreenState extends State<ChatScreen> {
   String contactName = "";
   String mUserId = "";
   final TextEditingController _textController = TextEditingController();
+  var mController = ScrollController();
 
   @override
   void initState() {
@@ -73,7 +74,7 @@ class _ChatScreenState extends State<ChatScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Row(
-mainAxisAlignment: MainAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
             CircleAvatar(),
             SizedBox(width: 10,),
@@ -104,7 +105,13 @@ mainAxisAlignment: MainAxisAlignment.start,
                   );
                 }
 
+                //mController.createScrollPosition(physics, context, oldPosition)
+                //last index
+                //snapshot.data!.docs[snapshot.data!.docs.length-1];
+
                 return ListView.builder(
+                  reverse: true,
+                  controller: mController,
                   padding: const EdgeInsets.all(8.0),
                   itemCount: snapshot.data!.docs.length,
                   itemBuilder: (_, int index) {

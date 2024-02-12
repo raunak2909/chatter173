@@ -129,6 +129,7 @@ class FirebaseProvider {
         .collection(COLLECTION_CHAT)
         .doc(chatId)
         .collection(COLLECTION_MSG)
+        .orderBy("sentAt", descending: true)
         .snapshots();
   }
 
@@ -157,4 +158,20 @@ class FirebaseProvider {
         .where("fromId", isEqualTo: toId)
         .snapshots();
   }
+
+  static Stream<QuerySnapshot<Map<String, dynamic>>> getLastMsg({required String userId, required String toId}){
+    var chatId = getChatId(userId, toId);
+
+    return fireBaseFireStore
+        .collection(COLLECTION_CHAT)
+        .doc(chatId)
+        .collection(COLLECTION_MSG)
+        .orderBy("sentAt", descending: true)
+        .limit(1)
+        .snapshots();
+
+
+  }
+
+
 }
